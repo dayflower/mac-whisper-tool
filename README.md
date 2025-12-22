@@ -1,6 +1,6 @@
 # mac-whisper-tool
 
-A CLI tool to export meeting transcriptions from MacWhisper's database.
+A CLI tool to export meeting transcriptions from [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper)'s database.
 
 ## Overview
 
@@ -13,10 +13,7 @@ This tool provides command-line access to MacWhisper's SQLite database, enabling
   - Markdown (standard or extended with metadata)
   - JSON (standard MacWhisper compatible or extended with metadata)
 - Single session export or batch export
-- Automatic filename generation
 - Meeting start time estimation
-- Extended content mode with timestamps and metadata
-- Verbose logging support
 
 ## Installation
 
@@ -66,6 +63,7 @@ mac-whisper-tool list --estimate-start
 ```
 
 **Options:**
+
 - `-d, --db <path>` - Database file path (default: `~/Library/Application Support/MacWhisper/Database/main.sqlite`)
 - `-s, --start <datetime>` - Filter by start date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
 - `-e, --end <datetime>` - Filter by end date
@@ -120,6 +118,7 @@ mac-whisper-tool export -c ./exports -n -1
 ```
 
 **Options:**
+
 - `-d, --db <path>` - Database file path
 - `-f, --format <format>` - Output format: `markdown` (or `md`), `json` (default: markdown)
 - `-o, --output <file>` - Output file path (single session only)
@@ -129,6 +128,7 @@ mac-whisper-tool export -c ./exports -n -1
 - `-v, --verbose` - Enable verbose output to stderr
 
 **Batch export options:**
+
 - `-s, --start <datetime>` - Filter by start date
 - `-e, --end <datetime>` - Filter by end date
 - `-n, --limit <n>` - Maximum number of meetings to export (negative for all)
@@ -138,10 +138,12 @@ mac-whisper-tool export -c ./exports -n -1
 ### Format vs Content
 
 - **Format** (`--format`, `-f`): Specifies the output format
+
   - `markdown` (or `md`): Markdown format (default)
   - `json`: JSON format
 
 - **Content** (`--extend`, `-x`): Specifies whether to include extended content
+
   - Default: Standard content (MacWhisper compatible)
   - `-x`: Extended content (includes timestamps and metadata)
 
@@ -152,12 +154,14 @@ mac-whisper-tool export -c ./exports -n -1
 ### Markdown
 
 **Standard format (default):**
+
 ```markdown
 - **Speaker 1**: foo bar baz
 - **Speaker 2**: hoge fuga
 ```
 
 **Extended format (`-x`):**
+
 ```markdown
 # Zoom Meeting
 
@@ -172,6 +176,7 @@ mac-whisper-tool export -c ./exports -n -1
 ### JSON
 
 **Standard format (MacWhisper compatible):**
+
 ```json
 [
   {
@@ -186,6 +191,7 @@ mac-whisper-tool export -c ./exports -n -1
 ```
 
 **Extended format (`-f json -x`):**
+
 ```json
 {
   "title": "Zoom Meeting",
@@ -224,6 +230,7 @@ Invalid filename characters are replaced with underscores.
 ### Input Formats
 
 The tool accepts the following datetime formats:
+
 - Date only: `2025-07-23` (treated as `2025-07-23T00:00:00.000`)
 - Date and time: `2025-07-23T11:22:33`
 - Date and time with milliseconds: `2025-07-23T11:22:33.000`
@@ -231,16 +238,19 @@ The tool accepts the following datetime formats:
 ### Start Time Estimation
 
 When using `--estimate-start`, the tool estimates the meeting start time by:
+
 1. Subtracting the meeting duration from `dateCreated`
 2. Rounding to the nearest 30 minutes
 
 For example:
+
 - Calculated time: 11:55 → Rounded to: 12:00
 - Calculated time: 13:10 → Rounded to: 13:00
 
 ## Database Location
 
 The default database path is:
+
 ```
 ~/Library/Application Support/MacWhisper/Database/main.sqlite
 ```
@@ -272,7 +282,7 @@ mac-whisper-tool export -d /path/to/custom.sqlite --estimate-start -x -c ./outpu
 
 ## License
 
-See LICENSE file for details.
+See [LICENSE](./LICENSE) file for details.
 
 ## Contributing
 
