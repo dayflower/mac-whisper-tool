@@ -1,4 +1,4 @@
-# GoReleaser configuration for mac-whisper-export
+# GoReleaser configuration for mac-whisper-tool
 # See: https://goreleaser.com
 
 version: 2
@@ -10,9 +10,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: mac-whisper-export
+  - id: mac-whisper-tool
     main: ./main.go
-    binary: mac-whisper-export
+    binary: mac-whisper-tool
     env:
       - CGO_ENABLED=0
     goos:
@@ -74,7 +74,7 @@ changelog:
 release:
   github:
     owner: dayflower
-    name: mac-whisper-export
+    name: mac-whisper-tool
   draft: false
   prerelease: auto
   mode: replace
@@ -84,17 +84,17 @@ release:
     Download the appropriate binary for your Mac architecture and extract it.
 
   footer: |
-    **Full Changelog**: https://github.com/dayflower/mac-whisper-export/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/dayflower/mac-whisper-tool/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 brews:
-  - name: mac-whisper-export
+  - name: mac-whisper-tool
     repository:
       owner: dayflower
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
-    homepage: https://github.com/dayflower/mac-whisper-export
+    homepage: https://github.com/dayflower/mac-whisper-tool
     description: CLI tool to export meeting transcriptions from MacWhisper's database
     license: MIT
     install: |
-      bin.install "mac-whisper-export"
+      bin.install "mac-whisper-tool"

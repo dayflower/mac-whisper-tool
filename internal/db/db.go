@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/dayflower/mac-whisper-export/internal/utils"
+	"github.com/dayflower/mac-whisper-tool/internal/utils"
 	_ "github.com/ncruces/go-sqlite3/driver"
 	_ "github.com/ncruces/go-sqlite3/embed"
 )

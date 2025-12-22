@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/dayflower/mac-whisper-export/internal/db"
-	"github.com/dayflower/mac-whisper-export/internal/utils"
+	"github.com/dayflower/mac-whisper-tool/internal/db"
+	"github.com/dayflower/mac-whisper-tool/internal/utils"
 )
 
 // ExportJSON exports transcripts in simple JSON format (MacWhisper compatible)

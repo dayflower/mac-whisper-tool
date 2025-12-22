@@ -1,4 +1,4 @@
-# mac-whisper-export
+# mac-whisper-tool
 
 A CLI tool to export meeting transcriptions from MacWhisper's database.
 
@@ -22,25 +22,25 @@ This tool provides command-line access to MacWhisper's SQLite database, enabling
 
 ### Pre-built Binaries
 
-Download the latest release for your macOS architecture from the [Releases](https://github.com/dayflower/mac-whisper-export/releases) page:
+Download the latest release for your macOS architecture from the [Releases](https://github.com/dayflower/mac-whisper-tool/releases) page:
 
-- **Intel Mac (x86_64)**: Download `mac-whisper-export_*_darwin_x86_64.tar.gz`
-- **Apple Silicon (ARM64)**: Download `mac-whisper-export_*_darwin_arm64.tar.gz`
+- **Intel Mac (x86_64)**: Download `mac-whisper-tool_*_darwin_x86_64.tar.gz`
+- **Apple Silicon (ARM64)**: Download `mac-whisper-tool_*_darwin_arm64.tar.gz`
 
 Extract and install:
 
 ```bash
 # Extract the archive
-tar -xzf mac-whisper-export_*_darwin_*.tar.gz
+tar -xzf mac-whisper-tool_*_darwin_*.tar.gz
 
 # Move to a directory in your PATH (optional)
-sudo mv mac-whisper-export /usr/local/bin/
+sudo mv mac-whisper-tool /usr/local/bin/
 ```
 
 ### From Source
 
 ```bash
-go build -o mac-whisper-export
+go build -o mac-whisper-tool
 ```
 
 The binary will be created in the current directory.
@@ -53,16 +53,16 @@ Display a list of meetings from the database:
 
 ```bash
 # Show the most recent 20 meetings (default)
-mac-whisper-export list
+mac-whisper-tool list
 
 # Show all meetings in JSON format
-mac-whisper-export list -n -1 -f json
+mac-whisper-tool list -n -1 -f json
 
 # Filter by date range
-mac-whisper-export list -s 2025-12-01 -e 2025-12-31
+mac-whisper-tool list -s 2025-12-01 -e 2025-12-31
 
 # Estimate meeting start times (rounds to nearest 30 minutes)
-mac-whisper-export list --estimate-start
+mac-whisper-tool list --estimate-start
 ```
 
 **Options:**
@@ -80,28 +80,28 @@ Export a single meeting transcription:
 
 ```bash
 # Export to stdout in Markdown format (default)
-mac-whisper-export export <session-id>
+mac-whisper-tool export <session-id>
 
 # Export to a specific file
-mac-whisper-export export -o output.md <session-id>
+mac-whisper-tool export -o output.md <session-id>
 
 # Export to a directory with auto-generated filename
-mac-whisper-export export -c ./exports <session-id>
+mac-whisper-tool export -c ./exports <session-id>
 
 # Export in JSON format (MacWhisper compatible)
-mac-whisper-export export -f json <session-id>
+mac-whisper-tool export -f json <session-id>
 
 # Export in extended Markdown format with metadata and timestamps
-mac-whisper-export export -x <session-id>
+mac-whisper-tool export -x <session-id>
 
 # Export in extended JSON format with metadata and timestamps
-mac-whisper-export export -f json -x <session-id>
+mac-whisper-tool export -f json -x <session-id>
 
 # Estimate start time (internal calculation only, doesn't affect output)
-mac-whisper-export export --estimate-start <session-id>
+mac-whisper-tool export --estimate-start <session-id>
 
 # Estimate start time with extended content
-mac-whisper-export export --estimate-start -x <session-id>
+mac-whisper-tool export --estimate-start -x <session-id>
 ```
 
 **Batch Export:**
@@ -110,13 +110,13 @@ Export multiple meetings at once:
 
 ```bash
 # Export the latest 10 meetings
-mac-whisper-export export -c ./exports -n 10
+mac-whisper-tool export -c ./exports -n 10
 
 # Export meetings from a specific date range
-mac-whisper-export export -c ./exports -s 2025-12-01 -e 2025-12-31
+mac-whisper-tool export -c ./exports -s 2025-12-01 -e 2025-12-31
 
 # Export all meetings
-mac-whisper-export export -c ./exports -n -1
+mac-whisper-tool export -c ./exports -n -1
 ```
 
 **Options:**
@@ -258,16 +258,16 @@ You can specify a different path using the `-d, --db` flag.
 
 ```bash
 # List the latest 5 meetings with verbose output
-mac-whisper-export list -n 5 -v
+mac-whisper-tool list -n 5 -v
 
 # Export a specific meeting to a file with extended content
-mac-whisper-export export -x -o meeting.md abc123def456
+mac-whisper-tool export -x -o meeting.md abc123def456
 
 # Batch export all meetings from December 2025 in extended JSON format
-mac-whisper-export export -c ./exports -f json -x -s 2025-12-01 -e 2025-12-31 -n -1
+mac-whisper-tool export -c ./exports -f json -x -s 2025-12-01 -e 2025-12-31 -n -1
 
 # Export using a custom database path with estimated start time
-mac-whisper-export export -d /path/to/custom.sqlite --estimate-start -x -c ./output sessionID
+mac-whisper-tool export -d /path/to/custom.sqlite --estimate-start -x -c ./output sessionID
 ```
 
 ## License

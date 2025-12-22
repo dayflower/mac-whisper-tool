@@ -1,4 +1,4 @@
-module github.com/dayflower/mac-whisper-export
+module github.com/dayflower/mac-whisper-tool
 
 go 1.24.0
 

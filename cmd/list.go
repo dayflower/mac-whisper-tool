@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/dayflower/mac-whisper-export/internal/db"
-	"github.com/dayflower/mac-whisper-export/internal/exporter"
-	"github.com/dayflower/mac-whisper-export/internal/formatter"
-	"github.com/dayflower/mac-whisper-export/internal/utils"
+	"github.com/dayflower/mac-whisper-tool/internal/db"
+	"github.com/dayflower/mac-whisper-tool/internal/exporter"
+	"github.com/dayflower/mac-whisper-tool/internal/formatter"
+	"github.com/dayflower/mac-whisper-tool/internal/utils"
 	"github.com/spf13/cobra"
 )
 

@@ -15,14 +15,14 @@ var (
 
 // rootCmd represents the base command
 var rootCmd = &cobra.Command{
-	Use:   "mac-whisper-export",
+	Use:   "mac-whisper-tool",
 	Short: "Export meeting transcriptions from MacWhisper's database",
 	Long: `A CLI tool to export meeting transcriptions from MacWhisper's database.
 
 This tool provides command-line access to MacWhisper's SQLite database,
 enabling users to list and export meeting transcriptions in various formats
 (Markdown, JSON).`,
-	Version: "0.1.0",
+	Version: "0.2.0",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

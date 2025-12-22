@@ -1,4 +1,4 @@
-# mac-whisper-export
+# mac-whisper-tool
 
 A CLI tool to export meeting transcriptions from MacWhisper's database.
 
@@ -18,7 +18,7 @@ This tool provides command-line access to MacWhisper's SQLite database, enabling
 ## Project Structure
 
 ```
-mac-whisper-export/
+mac-whisper-tool/
 ├── cmd/
 │   ├── root.go           # Root command and global flags
 │   ├── list.go           # List subcommand
