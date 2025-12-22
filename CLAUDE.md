@@ -11,7 +11,7 @@ This tool provides command-line access to MacWhisper's SQLite database, enabling
 - **Language**: Go
 - **Database**: SQLite3 (MacWhisper's database)
 - **CLI Framework**: Use `cobra` for subcommand structure
-- **Database Access**: Use `github.com/mattn/go-sqlite3` or `modernc.org/sqlite` (pure Go)
+- **Database Access**: Use `github.com/ncruces/go-sqlite3` (pure Go, no CGO required)
 - **Table Output**: Use `github.com/olekukonko/tablewriter` for table formatting
 - **Date/Time**: Standard library `time` package with JST timezone support
 
@@ -131,10 +131,12 @@ Auto-generated filenames follow the pattern: `{datetime} {title}.{ext}`
 ```go
 require (
     github.com/spf13/cobra v1.8.0
-    github.com/mattn/go-sqlite3 v1.14.22 // or modernc.org/sqlite
+    github.com/ncruces/go-sqlite3 v0.30.4
     github.com/olekukonko/tablewriter v0.0.5
 )
 ```
+
+**Note**: This project uses `github.com/ncruces/go-sqlite3`, a pure Go SQLite driver that doesn't require CGO. This allows for simpler cross-compilation and faster CI builds.
 
 ## Default Values
 
