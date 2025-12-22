@@ -1,0 +1,100 @@
+# GoReleaser configuration for mac-whisper-export
+# See: https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    # Run tests before building
+    - go test ./...
+    - go mod tidy
+
+builds:
+  - id: mac-whisper-export
+    main: ./main.go
+    binary: mac-whisper-export
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    # Build flags
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - README.md
+      - LICENSE*
+      - CLAUDE.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - "^style:"
+      - "typo"
+  groups:
+    - title: "New Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "Performance Improvements"
+      regexp: '^.*?perf(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "Other Changes"
+      order: 999
+
+release:
+  github:
+    owner: dayflower
+    name: mac-whisper-export
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## macOS CLI tool to export MacWhisper transcriptions
+
+    Download the appropriate binary for your Mac architecture and extract it.
+
+  footer: |
+    **Full Changelog**: https://github.com/dayflower/mac-whisper-export/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+brews:
+  - name: mac-whisper-export
+    repository:
+      owner: dayflower
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: https://github.com/dayflower/mac-whisper-export
+    description: CLI tool to export meeting transcriptions from MacWhisper's database
+    license: MIT
+    install: |
+      bin.install "mac-whisper-export"

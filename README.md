@@ -20,6 +20,23 @@ This tool provides command-line access to MacWhisper's SQLite database, enabling
 
 ## Installation
 
+### Pre-built Binaries
+
+Download the latest release for your macOS architecture from the [Releases](https://github.com/dayflower/mac-whisper-export/releases) page:
+
+- **Intel Mac (x86_64)**: Download `mac-whisper-export_*_darwin_x86_64.tar.gz`
+- **Apple Silicon (ARM64)**: Download `mac-whisper-export_*_darwin_arm64.tar.gz`
+
+Extract and install:
+
+```bash
+# Extract the archive
+tar -xzf mac-whisper-export_*_darwin_*.tar.gz
+
+# Move to a directory in your PATH (optional)
+sudo mv mac-whisper-export /usr/local/bin/
+```
+
 ### From Source
 
 ```bash
