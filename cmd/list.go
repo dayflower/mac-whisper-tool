@@ -34,8 +34,6 @@ You can filter by date range, change the limit, or output as JSON.`,
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd)
-
 	listCmd.Flags().StringVarP(&listStartTime, "start", "s", "", "Filter by start datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)")
 	listCmd.Flags().StringVarP(&listEndTime, "end", "e", "", "Filter by end datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)")
 	listCmd.Flags().IntVarP(&listLimit, "limit", "n", 20, "Maximum number of meetings to display (negative for all)")
@@ -88,9 +86,17 @@ func runList(cmd *cobra.Command, args []string) error {
 		logVerbose("Estimating meeting start times")
 	}
 
+	// Build filters
+	filters := db.ListMeetingsFilters{
+		StartTime:     startTime,
+		EndTime:       endTime,
+		Limit:         limit,
+		EstimateStart: estimateStart,
+	}
+
 	// Query meetings
 	logVerbose("Querying meetings...")
-	meetings, err := database.ListMeetings(startTime, endTime, limit, estimateStart)
+	meetings, err := database.ListMeetings(filters)
 	if err != nil {
 		return fmt.Errorf("failed to list meetings: %w", err)
 	}

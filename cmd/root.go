@@ -37,6 +37,13 @@ func init() {
 	// Global flags
 	rootCmd.PersistentFlags().StringVarP(&dbPath, "db", "d", "~/Library/Application Support/MacWhisper/Database/main.sqlite", "Path to MacWhisper database file")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output to stderr")
+
+	cobra.EnableCommandSorting = false
+
+	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(searchCmd)
+	rootCmd.AddCommand(exportCmd)
+	rootCmd.AddCommand(mcpCmd)
 }
 
 // logVerbose prints message to stderr if verbose mode is enabled
