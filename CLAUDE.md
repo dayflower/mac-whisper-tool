@@ -43,7 +43,6 @@ mac-whisper-tool/
 │   └── utils/
 │       ├── datetime.go   # Date/time utilities (estimation, parsing, formatting)
 │       └── sessionid.go  # Session ID encoding (binary to base64)
-├── sketch/               # Design documents (existing)
 ├── go.mod
 ├── go.sum
 ├── main.go
@@ -54,11 +53,13 @@ mac-whisper-tool/
 ## Key Implementation Details
 
 ### Session ID Handling
+
 - MacWhisper stores 128-bit binary session IDs
 - Convert to base64 without padding for CLI usage
 - Use `base64.RawStdEncoding` (standard base64 without padding)
 
 ### Date/Time Handling
+
 - Database stores timestamps as standard SQLite DATETIME (not Core Data format)
 - Convert to local timezone for display
 - Support two modes:
@@ -70,7 +71,7 @@ mac-whisper-tool/
 - Input parsing: Accept `YYYY-MM-DD`, `YYYY-MM-DDTHH:MM:SS`, or `YYYY-MM-DDTHH:MM:SS.sss`
 
 ### Database Schema
-Refer to [sketch/DB.md](sketch/DB.md) for detailed schema information:
+
 - `ZRECORDEDMEETING` table for meeting metadata
 - `ZSESSION` table for session data
 - `ZTRANSCRIPTLINE` table for transcript lines
@@ -78,23 +79,28 @@ Refer to [sketch/DB.md](sketch/DB.md) for detailed schema information:
 ### Export Formats and Content Modes
 
 **Format Options** (`--format`, `-f`):
+
 - `markdown` (or `md`): Markdown format (default)
 - `json`: JSON format
 
 **Content Options** (`--extend`, `-x`):
+
 - Default: Standard content (MacWhisper compatible)
 - `-x`: Extended content (includes timestamps and metadata)
 
 **Start Time Estimation** (`--estimate-start`):
+
 - Estimates meeting start time (internal calculation)
 - Doesn't affect output format by itself
 - When combined with `-x`, timestamps use estimated start time
 
 1. **Markdown**
+
    - Standard: `- **Speaker 1**: text`
    - Extended (`-x`): Includes title header, metadata (Date Started, Date Created, Duration), and timestamps for each line
 
 2. **JSON**
+
    - Standard: Array of `{speaker, text}` objects (MacWhisper compatible)
    - Extended (`-f json -x`): Full metadata with `{title, dateStarted, dateCreated, duration, transcripts[]}` where each transcript includes `speakedAt`
 
@@ -102,10 +108,13 @@ Refer to [sketch/DB.md](sketch/DB.md) for detailed schema information:
    - Columns: Session ID, Start Time, Duration, Title, Preview
 
 ### File Naming Convention
+
 Auto-generated filenames follow the pattern: `{datetime} {title}.{ext}`
+
 - Example: `2025-07-23T12:34:56.000 Zoom Meeting.md`
 
 ### Error Handling
+
 - Non-existent session ID: stderr message, exit code 1
 - Missing DB file: stderr message, exit code 1
 - Missing output directory: Auto-create (fail with exit code 1 on error)
@@ -114,23 +123,26 @@ Auto-generated filenames follow the pattern: `{datetime} {title}.{ext}`
 ## Development Guidelines
 
 ### Phase 1 (Initial Implementation)
+
 - Implement `list` subcommand
 - Implement `export` subcommand (single and batch modes)
 - Support all specified output formats
 - Support date/time filtering and estimation
 
 ### Phase 2 (Future)
+
 - Implement MCP server subcommand
 - Support `search_meetings` tool for content/title/date search
-- Expose sessions as Resources with `macwhisper://session/{id}` URI scheme
+- Expose sessions as Resources with `macwhisper://localhost/session/{id}` URI scheme
 - stdio transport only for local MCP client integration
-- See [sketch/MCP_PLAN.md](sketch/MCP_PLAN.md) for detailed specification
 
 ### Phase 3 (Future)
+
 - Implement `interactive` subcommand with TUI
 - Consider using `bubbletea` or `tview` for TUI
 
 ### Phase 4 (Future)
+
 - Support multiple selection in interactive mode
 
 ## Testing Strategy

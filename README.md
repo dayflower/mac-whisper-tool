@@ -9,6 +9,7 @@ This tool provides both command-line interface and MCP (Model Context Protocol) 
 ## Features
 
 ### CLI Features
+
 - List meetings with filtering by date range
 - Search meetings by content keywords, title keywords, and date range
 - Export transcriptions in multiple formats:
@@ -18,6 +19,7 @@ This tool provides both command-line interface and MCP (Model Context Protocol) 
 - Meeting start time estimation
 
 ### MCP Server Features
+
 - Search meetings by content keywords, title keywords, and date range
 - Retrieve transcriptions as MCP resources
 - Extended Markdown format with timestamps and metadata
@@ -309,11 +311,13 @@ The default database path is:
 You can specify a different database path using one of the following methods (in priority order):
 
 1. **Command-line flag** (for one-time use, highest priority):
+
    ```bash
    mac-whisper-tool list --db /path/to/custom/main.sqlite
    ```
 
 2. **Environment variable** (for session-wide use):
+
    ```bash
    export MAC_WHISPER_DB="/path/to/custom/main.sqlite"
    ```
@@ -321,10 +325,12 @@ You can specify a different database path using one of the following methods (in
 3. **Configuration file** (for persistent use):
 
    Create a configuration file at one of these locations:
+
    - `~/.config/MacWhisperTool/config.json` (recommended, XDG compliant)
    - `~/Library/Application Support/MacWhisperTool/config.json` (macOS standard)
 
    **Configuration file format**:
+
    ```json
    {
      "database": {
@@ -334,6 +340,7 @@ You can specify a different database path using one of the following methods (in
    ```
 
    **Example**:
+
    ```bash
    # Create config directory
    mkdir -p ~/.config/MacWhisperTool
@@ -349,6 +356,7 @@ You can specify a different database path using one of the following methods (in
    ```
 
 **Priority order**:
+
 1. `--db` flag (highest)
 2. `MAC_WHISPER_DB` environment variable
 3. `~/.config/MacWhisperTool/config.json`
@@ -399,17 +407,16 @@ If you installed the tool in a different location, adjust the `command` path acc
 The MCP server provides:
 
 1. **search_meetings tool**: Search meeting transcriptions
+
    - Search by content keywords (AND condition)
    - Search by title keywords (AND condition)
    - Filter by date range (after/before)
    - Limit results (default: 10, max: 100)
 
 2. **Resource access**: Retrieve transcription content
-   - URI scheme: `macwhisper://session/{sessionID}`
+   - URI scheme: `macwhisper://localhost/session/{sessionID}`
    - Returns extended Markdown format with timestamps and metadata
    - Use search_meetings tool to discover session IDs
-
-For detailed MCP specifications, see [sketch/MCP_PLAN.md](sketch/MCP_PLAN.md).
 
 ## Error Handling
 
