@@ -12,6 +12,9 @@ import (
 	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
+// LogFunc is a function type for logging messages (optional parameter)
+type LogFunc func(format string, args ...interface{})
+
 // DB represents a database connection
 type DB struct {
 	conn *sql.DB
@@ -49,37 +52,101 @@ func (db *DB) Close() error {
 }
 
 // ListMeetings retrieves a list of meetings based on filters
-func (db *DB) ListMeetings(startTime, endTime *time.Time, limit int, estimateStart bool) ([]MeetingInfo, error) {
-	query := `
-		SELECT
-			s.id,
-			s.dateCreated,
-			s.playbackDuration,
-			COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, 'Untitled'),
-			COALESCE(s.textPreview, ''),
-			rm.duration
-		FROM session s
-		LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
-		WHERE s.recordedMeetingID IS NOT NULL
-	`
+// Optional logFunc parameter can be provided for debug logging
+func (db *DB) ListMeetings(filters ListMeetingsFilters, logFunc ...LogFunc) ([]MeetingInfo, error) {
+	// Helper for conditional logging
+	log := func(format string, args ...interface{}) {
+		if len(logFunc) > 0 && logFunc[0] != nil {
+			logFunc[0](format, args...)
+		}
+	}
 
+	var query string
 	args := []interface{}{}
 
-	// Add time filters
-	if startTime != nil {
-		query += " AND s.dateCreated >= ?"
-		args = append(args, startTime.Format("2006-01-02 15:04:05"))
+	// When EstimateStart is enabled, we need to filter by estimated start time
+	// This requires a subquery to calculate the estimated time first
+	if filters.EstimateStart && (filters.StartTime != nil || filters.EndTime != nil) {
+		query = `
+			SELECT
+				s.id,
+				s.dateCreated,
+				s.playbackDuration,
+				COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, 'Untitled') AS title,
+				COALESCE(s.textPreview, ''),
+				rm.duration,
+				CASE
+					WHEN COALESCE(rm.duration, s.playbackDuration, 0) > 0 THEN
+						datetime(s.dateCreated, '-' || CAST(COALESCE(rm.duration, s.playbackDuration) AS INTEGER) || ' seconds')
+					ELSE
+						s.dateCreated
+				END AS estimatedStart
+			FROM session s
+			LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
+			WHERE s.recordedMeetingID IS NOT NULL
+		`
+	} else {
+		query = `
+			SELECT
+				s.id,
+				s.dateCreated,
+				s.playbackDuration,
+				COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, 'Untitled') AS title,
+				COALESCE(s.textPreview, ''),
+				rm.duration
+			FROM session s
+			LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
+			WHERE s.recordedMeetingID IS NOT NULL
+		`
 	}
-	if endTime != nil {
-		query += " AND s.dateCreated <= ?"
-		args = append(args, endTime.Format("2006-01-02 15:04:05"))
+
+	// Add content keyword filters (AND condition)
+	for _, keyword := range filters.Keywords {
+		query += " AND s.fullText LIKE ?"
+		args = append(args, "%"+keyword+"%")
+	}
+
+	// Add title keyword filters (AND condition)
+	for _, keyword := range filters.TitleKeywords {
+		query += " AND title LIKE ?"
+		args = append(args, "%"+keyword+"%")
+	}
+
+	// Add time filters
+	// When EstimateStart is enabled, filter by estimated start time; otherwise by dateCreated
+	if filters.StartTime != nil {
+		if filters.EstimateStart {
+			query += " AND estimatedStart >= ?"
+		} else {
+			query += " AND s.dateCreated >= ?"
+		}
+		args = append(args, filters.StartTime.Format("2006-01-02 15:04:05"))
+	}
+	if filters.EndTime != nil {
+		if filters.EstimateStart {
+			query += " AND estimatedStart <= ?"
+		} else {
+			query += " AND s.dateCreated <= ?"
+		}
+		args = append(args, filters.EndTime.Format("2006-01-02 15:04:05"))
 	}
 
 	query += " ORDER BY s.dateCreated DESC"
 
-	if limit > 0 {
+	if filters.Limit > 0 {
 		query += " LIMIT ?"
-		args = append(args, limit)
+		args = append(args, filters.Limit)
+	}
+
+	// Log query information
+	log("SQL Query: %s", query)
+	log("SQL Args: %v", args)
+
+	// Get total session count for debugging
+	var totalCount int
+	countQuery := "SELECT COUNT(*) FROM session s WHERE s.recordedMeetingID IS NOT NULL"
+	if err := db.conn.QueryRow(countQuery).Scan(&totalCount); err == nil {
+		log("Database total sessions: %d", totalCount)
 	}
 
 	rows, err := db.conn.Query(query, args...)
@@ -97,11 +164,20 @@ func (db *DB) ListMeetings(startTime, endTime *time.Time, limit int, estimateSta
 			title             string
 			preview           string
 			recordingDuration *float64
+			estimatedStartStr *string
 		)
 
-		err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan row: %w", err)
+		// When EstimateStart is enabled and time filters are present, we have an extra column
+		if filters.EstimateStart && (filters.StartTime != nil || filters.EndTime != nil) {
+			err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration, &estimatedStartStr)
+			if err != nil {
+				return nil, fmt.Errorf("failed to scan row: %w", err)
+			}
+		} else {
+			err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration)
+			if err != nil {
+				return nil, fmt.Errorf("failed to scan row: %w", err)
+			}
 		}
 
 		originalDateTime := dateCreated.Local()
@@ -116,7 +192,7 @@ func (db *DB) ListMeetings(startTime, endTime *time.Time, limit int, estimateSta
 		}
 
 		// Estimate start time if requested
-		if estimateStart && duration > 0 {
+		if filters.EstimateStart && duration > 0 {
 			startDateTime = estimateStartTime(originalDateTime, duration)
 		}
 
@@ -130,9 +206,11 @@ func (db *DB) ListMeetings(startTime, endTime *time.Time, limit int, estimateSta
 			Duration:          duration,
 			Title:             title,
 			Preview:           preview,
-			UseEstimatedStart: estimateStart,
+			UseEstimatedStart: filters.EstimateStart,
 		})
 	}
+
+	log("Query returned %d rows", len(meetings))
 
 	return meetings, nil
 }

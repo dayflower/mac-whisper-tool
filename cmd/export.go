@@ -43,8 +43,6 @@ By default, exports to stdout in Markdown format. You can specify:
 }
 
 func init() {
-	rootCmd.AddCommand(exportCmd)
-
 	exportCmd.Flags().StringVarP(&exportFormat, "format", "f", "markdown", "Output format: markdown (md) or json")
 	exportCmd.Flags().StringVarP(&exportOutput, "output", "o", "", "Output file path (default: stdout)")
 	exportCmd.Flags().StringVarP(&exportOutputDir, "output-dir", "c", "", "Output directory (filename will be auto-generated)")
@@ -206,10 +204,18 @@ func runBatchExport() error {
 		logVerbose("Estimating meeting start times")
 	}
 
+	// Build filters
+	filters := db.ListMeetingsFilters{
+		StartTime:     startTime,
+		EndTime:       endTime,
+		Limit:         limit,
+		EstimateStart: estimateStart,
+	}
+
 	// Query meetings (with timestamps if --extend is used)
 	includeTimestamps := exportExtend
 	logVerbose("Querying meetings...")
-	meetings, err := database.ListMeetings(startTime, endTime, limit, estimateStart)
+	meetings, err := database.ListMeetings(filters)
 	if err != nil {
 		return fmt.Errorf("failed to list meetings: %w", err)
 	}

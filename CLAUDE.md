@@ -23,7 +23,8 @@ mac-whisper-tool/
 │   ├── root.go           # Root command and global flags
 │   ├── list.go           # List subcommand
 │   ├── export.go         # Export subcommand
-│   └── interactive.go    # Interactive subcommand (Phase 2)
+│   ├── mcp.go            # MCP subcommand (Phase 2)
+│   └── interactive.go    # Interactive subcommand (Phase 3)
 ├── internal/
 │   ├── db/
 │   │   ├── db.go         # Database connection and queries
@@ -33,6 +34,12 @@ mac-whisper-tool/
 │   │   └── json.go       # JSON export
 │   ├── formatter/
 │   │   └── table.go      # Table formatting for list
+│   ├── mcp/              # MCP server implementation (Phase 2)
+│   │   ├── server.go     # MCP server main
+│   │   ├── tools.go      # Tool handler (search_meetings)
+│   │   ├── resources.go  # Resource handlers
+│   │   ├── search.go     # Search logic
+│   │   └── uri.go        # URI parsing
 │   └── utils/
 │       ├── datetime.go   # Date/time utilities (estimation, parsing, formatting)
 │       └── sessionid.go  # Session ID encoding (binary to base64)
@@ -113,10 +120,17 @@ Auto-generated filenames follow the pattern: `{datetime} {title}.{ext}`
 - Support date/time filtering and estimation
 
 ### Phase 2 (Future)
+- Implement MCP server subcommand
+- Support `search_meetings` tool for content/title/date search
+- Expose sessions as Resources with `macwhisper://session/{id}` URI scheme
+- stdio transport only for local MCP client integration
+- See [sketch/MCP_PLAN.md](sketch/MCP_PLAN.md) for detailed specification
+
+### Phase 3 (Future)
 - Implement `interactive` subcommand with TUI
 - Consider using `bubbletea` or `tview` for TUI
 
-### Phase 3 (Future)
+### Phase 4 (Future)
 - Support multiple selection in interactive mode
 
 ## Testing Strategy
@@ -133,6 +147,8 @@ require (
     github.com/spf13/cobra v1.8.0
     github.com/ncruces/go-sqlite3 v0.30.4
     github.com/olekukonko/tablewriter v0.0.5
+    // Phase 2: MCP server support
+    github.com/modelcontextprotocol/go-sdk v0.x.x  // TBD
 )
 ```
 
@@ -150,7 +166,3 @@ require (
 - Use `--verbose` or `-v` flag
 - Output progress messages to stderr
 - Always output errors to stderr (even in non-verbose mode)
-
-## Commands Reference
-
-See [sketch/SPEC.md](sketch/SPEC.md) for detailed command-line interface specification.

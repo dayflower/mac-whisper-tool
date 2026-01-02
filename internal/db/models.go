@@ -59,6 +59,16 @@ type MeetingInfo struct {
 	UseEstimatedStart bool
 }
 
+// ListMeetingsFilters contains all filter parameters for listing meetings
+type ListMeetingsFilters struct {
+	StartTime     *time.Time
+	EndTime       *time.Time
+	Limit         int
+	EstimateStart bool
+	Keywords      []string // AND condition on session.fullText
+	TitleKeywords []string // AND condition on title fields
+}
+
 // TranscriptExport represents the export structure for transcripts
 type TranscriptExport struct {
 	Speaker   string

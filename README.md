@@ -1,19 +1,27 @@
 # mac-whisper-tool
 
-A CLI tool to export meeting transcriptions from [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper)'s database.
+A CLI tool and MCP server for accessing meeting transcriptions from [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper)'s database.
 
 ## Overview
 
-This tool provides command-line access to MacWhisper's SQLite database, enabling users to list and export meeting transcriptions in various formats (Markdown, JSON).
+This tool provides both command-line interface and MCP (Model Context Protocol) server for MacWhisper's SQLite database. It enables users to list and export meeting transcriptions in various formats, and allows AI assistants to search and retrieve transcriptions via the MCP protocol.
 
 ## Features
 
+### CLI Features
 - List meetings with filtering by date range
+- Search meetings by content keywords, title keywords, and date range
 - Export transcriptions in multiple formats:
   - Markdown (standard or extended with metadata)
   - JSON (standard MacWhisper compatible or extended with metadata)
 - Single session export or batch export
 - Meeting start time estimation
+
+### MCP Server Features
+- Search meetings by content keywords, title keywords, and date range
+- Retrieve transcriptions as MCP resources
+- Extended Markdown format with timestamps and metadata
+- Integration with AI assistants (e.g., Claude Desktop)
 
 ## Installation
 
@@ -71,6 +79,47 @@ mac-whisper-tool list --estimate-start
 - `-f, --format <format>` - Output format: `table` or `json` (default: table)
 - `--estimate-start` - Estimate meeting start time from dateCreated and duration
 - `-v, --verbose` - Enable verbose output to stderr
+
+### Search Meetings
+
+Search for specific meetings by keywords, title, or date range:
+
+```bash
+# Search by content keyword
+mac-whisper-tool search -k "budget"
+
+# Search by multiple keywords (AND condition)
+mac-whisper-tool search -k "zoom" -k "meeting"
+
+# Search by title keywords
+mac-whisper-tool search -t "standup" -t "team"
+
+# Search with date range
+mac-whisper-tool search -k "project" -s 2025-01-01 -e 2025-03-31
+
+# Limit results
+mac-whisper-tool search -k "meeting" -n 10
+
+# JSON output
+mac-whisper-tool search -k "Q4" -f json
+
+# Estimate start times
+mac-whisper-tool search -k "zoom" --estimate-start
+```
+
+**Options:**
+
+- `-k, --keywords <keyword>` - Content keywords (repeatable, AND condition)
+- `-t, --title <keyword>` - Title keywords (repeatable, AND condition)
+- `-s, --start <datetime>` - Filter by start date (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)
+- `-e, --end <datetime>` - Filter by end date
+- `-n, --limit <n>` - Maximum number of results (default: 20, negative for all)
+- `-f, --format <format>` - Output format: `table` or `json` (default: table)
+- `--estimate-start` - Estimate meeting start time from dateCreated and duration
+- `-d, --db <path>` - Database file path (inherited from global)
+- `-v, --verbose` - Enable verbose output to stderr (inherited from global)
+
+At least one search criterion (keywords, title, or date range) must be specified.
 
 ### Export Transcriptions
 
@@ -256,6 +305,62 @@ The default database path is:
 ```
 
 You can specify a different path using the `-d, --db` flag.
+
+## MCP Server
+
+### Starting the Server
+
+Start the MCP server to enable AI assistant integration:
+
+```bash
+# Start MCP server with default database
+mac-whisper-tool mcp
+
+# Use custom database path
+mac-whisper-tool mcp --db /path/to/custom.sqlite
+
+# Enable verbose logging to stderr
+mac-whisper-tool mcp --verbose
+```
+
+**Options:**
+
+- `-d, --db <path>` - Database file path (default: `~/Library/Application Support/MacWhisper/Database/main.sqlite`)
+- `-v, --verbose` - Enable verbose output to stderr
+
+### Claude Desktop Configuration
+
+Add the following to your Claude Desktop configuration file (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "mac-whisper": {
+      "command": "/usr/local/bin/mac-whisper-tool",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+If you installed the tool in a different location, adjust the `command` path accordingly.
+
+### MCP Features
+
+The MCP server provides:
+
+1. **search_meetings tool**: Search meeting transcriptions
+   - Search by content keywords (AND condition)
+   - Search by title keywords (AND condition)
+   - Filter by date range (after/before)
+   - Limit results (default: 10, max: 100)
+
+2. **Resource access**: Retrieve transcription content
+   - URI scheme: `macwhisper://session/{sessionID}`
+   - Returns extended Markdown format with timestamps and metadata
+   - Use search_meetings tool to discover session IDs
+
+For detailed MCP specifications, see [sketch/MCP_PLAN.md](sketch/MCP_PLAN.md).
 
 ## Error Handling
 
