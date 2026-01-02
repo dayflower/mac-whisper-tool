@@ -304,7 +304,56 @@ The default database path is:
 ~/Library/Application Support/MacWhisper/Database/main.sqlite
 ```
 
-You can specify a different path using the `-d, --db` flag.
+### Custom Database Path
+
+You can specify a different database path using one of the following methods (in priority order):
+
+1. **Command-line flag** (for one-time use, highest priority):
+   ```bash
+   mac-whisper-tool list --db /path/to/custom/main.sqlite
+   ```
+
+2. **Environment variable** (for session-wide use):
+   ```bash
+   export MAC_WHISPER_DB="/path/to/custom/main.sqlite"
+   ```
+
+3. **Configuration file** (for persistent use):
+
+   Create a configuration file at one of these locations:
+   - `~/.config/MacWhisperTool/config.json` (recommended, XDG compliant)
+   - `~/Library/Application Support/MacWhisperTool/config.json` (macOS standard)
+
+   **Configuration file format**:
+   ```json
+   {
+     "database": {
+       "path": "/path/to/custom/main.sqlite"
+     }
+   }
+   ```
+
+   **Example**:
+   ```bash
+   # Create config directory
+   mkdir -p ~/.config/MacWhisperTool
+
+   # Create config file
+   cat > ~/.config/MacWhisperTool/config.json <<EOF
+   {
+     "database": {
+       "path": "~/custom/meeting.sqlite"
+     }
+   }
+   EOF
+   ```
+
+**Priority order**:
+1. `--db` flag (highest)
+2. `MAC_WHISPER_DB` environment variable
+3. `~/.config/MacWhisperTool/config.json`
+4. `~/Library/Application Support/MacWhisperTool/config.json`
+5. Default path (lowest)
 
 ## MCP Server
 
