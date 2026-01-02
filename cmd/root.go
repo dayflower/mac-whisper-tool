@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dayflower/mac-whisper-tool/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -38,8 +39,15 @@ func Execute() {
 }
 
 func init() {
+	// Get default DB path with priority:
+	// 1. --db flag (handled by cobra)
+	// 2. MAC_WHISPER_DB environment variable
+	// 3. Config files
+	// 4. Default path
+	defaultDBPath := config.GetDatabasePath()
+
 	// Global flags
-	rootCmd.PersistentFlags().StringVarP(&dbPath, "db", "d", "~/Library/Application Support/MacWhisper/Database/main.sqlite", "Path to MacWhisper database file")
+	rootCmd.PersistentFlags().StringVarP(&dbPath, "db", "d", defaultDBPath, "Path to MacWhisper database file")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output to stderr")
 
 	cobra.EnableCommandSorting = false
