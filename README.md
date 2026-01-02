@@ -27,6 +27,16 @@ This tool provides both command-line interface and MCP (Model Context Protocol) 
 
 ## Installation
 
+### Homebrew
+
+The easiest way to install on macOS is via Homebrew:
+
+```bash
+brew install dayflower/tap/mac-whisper-tool
+```
+
+This will install the appropriate binary for your architecture (Intel or Apple Silicon).
+
 ### Pre-built Binaries
 
 Download the latest release for your macOS architecture from the [Releases](https://github.com/dayflower/mac-whisper-tool/releases) page:
@@ -445,6 +455,6 @@ mac-whisper-tool export -d /path/to/custom.sqlite --estimate-start -x -c ./outpu
 
 See [LICENSE](./LICENSE) file for details.
 
-## Contributing
+## Note
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+This tool is an experimental implementation. If you need modifications or additional features, please feel free to fork this repository and customize it for your own use.
