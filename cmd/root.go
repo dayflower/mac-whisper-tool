@@ -16,12 +16,16 @@ var (
 // rootCmd represents the base command
 var rootCmd = &cobra.Command{
 	Use:   "mac-whisper-tool",
-	Short: "Export meeting transcriptions from MacWhisper's database",
-	Long: `A CLI tool to export meeting transcriptions from MacWhisper's database.
+	Short: "CLI tool to manage MacWhisper meeting transcriptions",
+	Long: `A CLI tool to search, list, and export meeting transcriptions from MacWhisper's database.
 
 This tool provides command-line access to MacWhisper's SQLite database,
-enabling users to list and export meeting transcriptions in various formats
-(Markdown, JSON).`,
+enabling users to:
+- List meetings with optional filtering
+- Search meetings by keywords and date ranges
+- Export transcriptions in various formats (Markdown, JSON)
+- Start an MCP server for AI assistant integration
+`,
 	Version: "0.2.0",
 }
 
