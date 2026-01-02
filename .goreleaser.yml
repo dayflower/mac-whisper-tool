@@ -79,7 +79,7 @@ release:
   prerelease: auto
   mode: replace
   header: |
-    ## macOS CLI tool to export MacWhisper transcriptions
+    ## CLI tool to manage MacWhisper meeting transcriptions
 
     Download the appropriate binary for your Mac architecture and extract it.
 
@@ -94,7 +94,7 @@ brews:
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     directory: Formula
     homepage: https://github.com/dayflower/mac-whisper-tool
-    description: CLI tool to export meeting transcriptions from MacWhisper's database
+    description: CLI tool to manage MacWhisper meeting transcriptions (search, list, export, MCP server)
     license: MIT
     install: |
       bin.install "mac-whisper-tool"
