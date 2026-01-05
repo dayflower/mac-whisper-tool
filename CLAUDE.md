@@ -129,12 +129,17 @@ Auto-generated filenames follow the pattern: `{datetime} {title}.{ext}`
 - Support all specified output formats
 - Support date/time filtering and estimation
 
-### Phase 2 (Future)
+### Phase 2 (Completed)
 
-- Implement MCP server subcommand
-- Support `search_meetings` tool for content/title/date search
-- Expose sessions as Resources with `macwhisper://localhost/session/{id}` URI scheme
-- stdio transport only for local MCP client integration
+- Implement MCP server subcommand ✅
+- Support `search_meetings` tool for content/title/date search ✅
+- Expose sessions as Resources with `macwhisper://localhost/session/{id}` URI scheme ✅
+- stdio transport only for local MCP client integration ✅
+- Legacy mode support for older MCP clients ✅
+  - `--legacy` flag to enable legacy mode
+  - `get_meeting` tool for retrieving transcriptions (legacy mode only)
+  - JSON-formatted search results (both modes)
+  - Resources disabled in legacy mode
 
 ### Phase 3 (Future)
 

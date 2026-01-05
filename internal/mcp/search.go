@@ -1,8 +1,8 @@
 package mcp
 
 import (
+	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/dayflower/mac-whisper-tool/internal/db"
@@ -80,29 +80,50 @@ func SearchMeetings(database *db.DB, params SearchMeetingsParams, estimateStart 
 	}, nil
 }
 
-// FormatSearchSummary formats search results as text summary
-// Format per specification in MCP_PLAN.md
-func FormatSearchSummary(result *SearchMeetingsResult) string {
+// SearchResultItem represents a single meeting in JSON format
+type SearchResultItem struct {
+	SessionID   string `json:"sessionId"`
+	DateStarted string `json:"dateStarted"`
+	Duration    string `json:"duration"`
+	Title       string `json:"title"`
+	Preview     string `json:"preview"`
+}
+
+// SearchResultJSON represents the JSON response structure
+type SearchResultJSON struct {
+	Message string             `json:"message"`
+	Total   int                `json:"total"`
+	Items   []SearchResultItem `json:"items"`
+}
+
+// FormatSearchResultJSON formats search results as JSON
+func FormatSearchResultJSON(result *SearchMeetingsResult) (string, error) {
+	message := fmt.Sprintf("Found %d matching meetings", result.Count)
 	if result.Count == 0 {
-		return "No matching meetings found."
+		message = "No matching meetings found"
 	}
 
-	var builder strings.Builder
-	fmt.Fprintf(&builder, "Found %d matching meetings:\n\n", result.Count)
-
-	for i, meeting := range result.Meetings {
-		// Format: "1. 2025-12-15 14:00 - Zoom Meeting\n   Duration: 45m 30s\n   Preview: ..."
-		datetime := meeting.DateStarted.Format("2006-01-02 15:04")
-		duration := utils.FormatDuration(meeting.Duration)
-
-		fmt.Fprintf(&builder, "%d. %s - %s\n", i+1, datetime, meeting.Title)
-		fmt.Fprintf(&builder, "   Duration: %s\n", duration)
-		fmt.Fprintf(&builder, "   Preview: %s\n", meeting.Preview)
-
-		if i < result.Count-1 {
-			builder.WriteString("\n")
-		}
+	items := make([]SearchResultItem, 0, len(result.Meetings))
+	for _, meeting := range result.Meetings {
+		items = append(items, SearchResultItem{
+			DateStarted: utils.FormatDateTime(meeting.DateStarted),
+			Duration:    utils.FormatDuration(meeting.Duration),
+			Title:       meeting.Title,
+			SessionID:   meeting.SessionID,
+			Preview:     meeting.Preview,
+		})
 	}
 
-	return builder.String()
+	response := SearchResultJSON{
+		Message: message,
+		Total:   result.Count,
+		Items:   items,
+	}
+
+	data, err := json.MarshalIndent(response, "", "  ")
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+
+	return string(data), nil
 }

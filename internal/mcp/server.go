@@ -14,6 +14,7 @@ type ServerConfig struct {
 	DBPath        string
 	Verbose       bool
 	EstimateStart bool
+	LegacyMode    bool
 }
 
 // RunServer starts the MCP server with stdio transport
@@ -48,10 +49,12 @@ func RunServer(ctx context.Context, config ServerConfig) error {
 	logInfo("Registering tools and resources...")
 
 	// Register tools
-	RegisterTools(server, database, config.EstimateStart, logInfo)
+	RegisterTools(server, database, config.EstimateStart, config.LegacyMode, logInfo)
 
-	// Register resources
-	RegisterResources(server, database, config.EstimateStart, logInfo)
+	// Register resources (only in non-legacy mode)
+	if !config.LegacyMode {
+		RegisterResources(server, database, config.EstimateStart, logInfo)
+	}
 
 	logInfo("MCP server initialized")
 	logInfo("Listening on stdio...")
