@@ -13,6 +13,7 @@ import (
 
 var (
 	mcpEstimateStart bool
+	mcpLegacyMode    bool
 )
 
 // mcpCmd represents the mcp command
@@ -40,6 +41,7 @@ Example usage in Claude Desktop configuration:
 func init() {
 	// MCP command uses global flags (dbPath, verbose) from root.go
 	mcpCmd.Flags().BoolVar(&mcpEstimateStart, "estimate-start", false, "Estimate meeting start time by subtracting duration from creation time")
+	mcpCmd.Flags().BoolVar(&mcpLegacyMode, "legacy", false, "Enable legacy mode for MCP clients that don't support Resources")
 }
 
 func runMCP(cmd *cobra.Command, args []string) error {
@@ -65,6 +67,7 @@ func runMCP(cmd *cobra.Command, args []string) error {
 		DBPath:        dbPath,
 		Verbose:       verbose,
 		EstimateStart: mcpEstimateStart,
+		LegacyMode:    mcpLegacyMode,
 	}
 
 	if err := mcp.RunServer(ctx, config); err != nil {

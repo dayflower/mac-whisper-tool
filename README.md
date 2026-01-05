@@ -21,9 +21,10 @@ This tool provides both command-line interface and MCP (Model Context Protocol) 
 ### MCP Server Features
 
 - Search meetings by content keywords, title keywords, and date range
-- Retrieve transcriptions as MCP resources
+- Retrieve transcriptions as MCP resources or via tools (legacy mode)
 - Extended Markdown format with timestamps and metadata
 - Integration with AI assistants (e.g., Claude Desktop)
+- Legacy mode support for older MCP clients that don't support Resources
 
 ## Installation
 
@@ -388,12 +389,17 @@ mac-whisper-tool mcp --db /path/to/custom.sqlite
 
 # Enable verbose logging to stderr
 mac-whisper-tool mcp --verbose
+
+# Enable legacy mode for older MCP clients
+mac-whisper-tool mcp --legacy
 ```
 
 **Options:**
 
 - `-d, --db <path>` - Database file path (default: `~/Library/Application Support/MacWhisper/Database/main.sqlite`)
 - `-v, --verbose` - Enable verbose output to stderr
+- `--legacy` - Enable legacy mode for MCP clients that don't support Resources
+- `--estimate-start` - Estimate meeting start time by subtracting duration from creation time
 
 ### Claude Desktop Configuration
 
@@ -422,11 +428,43 @@ The MCP server provides:
    - Search by title keywords (AND condition)
    - Filter by date range (after/before)
    - Limit results (default: 10, max: 100)
+   - Returns JSON-formatted results with session metadata
+   - In normal mode: Also returns resource links for each meeting
+   - In legacy mode: Returns only JSON results (no resource links)
 
-2. **Resource access**: Retrieve transcription content
+2. **Resource access** (normal mode only): Retrieve transcription content
    - URI scheme: `macwhisper://localhost/session/{sessionID}`
    - Returns extended Markdown format with timestamps and metadata
    - Use search_meetings tool to discover session IDs
+
+3. **get_meeting tool** (legacy mode only): Retrieve transcription by session ID
+   - Takes session ID as parameter
+   - Returns extended Markdown format with timestamps and metadata
+   - Alternative to Resources for older MCP clients
+
+### Legacy Mode
+
+Legacy mode is designed for MCP clients that don't support the Resources feature. When running in legacy mode (`--legacy`):
+
+- `search_meetings` returns JSON-formatted results without resource links
+- `get_meeting` tool is available to retrieve transcriptions by session ID
+- Resources are not registered
+
+**Normal mode** (default):
+```bash
+mac-whisper-tool mcp
+# - search_meetings returns JSON + resource links
+# - Resources are available
+# - get_meeting tool is NOT available
+```
+
+**Legacy mode**:
+```bash
+mac-whisper-tool mcp --legacy
+# - search_meetings returns JSON only (no resource links)
+# - Resources are NOT available
+# - get_meeting tool is available
+```
 
 ## Error Handling
 
