@@ -27,7 +27,7 @@ enabling users to:
 - Export transcriptions in various formats (Markdown, JSON)
 - Start an MCP server for AI assistant integration
 `,
-	Version: "0.4.0",
+	Version: "0.5.0",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
