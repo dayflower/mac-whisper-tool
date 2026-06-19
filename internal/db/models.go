@@ -56,6 +56,7 @@ type MeetingInfo struct {
 	Duration          float64   // seconds
 	Title             string
 	Preview           string
+	Type              string // session source type (recorded-meeting, system-audio, voice-memo, podcast, youtube, download, imported)
 	UseEstimatedStart bool
 }
 
@@ -67,6 +68,7 @@ type ListMeetingsFilters struct {
 	EstimateStart bool
 	Keywords      []string // AND condition on session.fullText
 	TitleKeywords []string // AND condition on title fields
+	SessionType   string   // restrict to one session type; empty = all (see ValidSessionTypes)
 }
 
 // TranscriptExport represents the export structure for transcripts

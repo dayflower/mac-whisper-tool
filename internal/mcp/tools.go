@@ -17,13 +17,14 @@ type SearchMeetingsInput struct {
 	After         string   `json:"after,omitempty" jsonschema:"Filter meetings started after this datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"`
 	Before        string   `json:"before,omitempty" jsonschema:"Filter meetings started before this datetime (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS)"`
 	Limit         int      `json:"limit,omitempty" jsonschema:"Maximum number of results (default: 10; max: 100)"`
+	SessionType   string   `json:"sessionType,omitempty" jsonschema:"Filter by session source type: recorded-meeting, system-audio, voice-memo, podcast, youtube, download, imported (empty = all)"`
 }
 
 // HandleSearchMeetings handles the search_meetings tool request
 func HandleSearchMeetings(database *db.DB, estimateStart bool, legacyMode bool, logFunc db.LogFunc) func(context.Context, *mcpsdk.CallToolRequest, SearchMeetingsInput) (*mcpsdk.CallToolResult, any, error) {
 	return func(ctx context.Context, req *mcpsdk.CallToolRequest, input SearchMeetingsInput) (*mcpsdk.CallToolResult, any, error) {
-		logFunc("Search request: keywords=%v, titleKeywords=%v, after=%s, before=%s, limit=%d",
-			input.Keywords, input.TitleKeywords, input.After, input.Before, input.Limit)
+		logFunc("Search request: keywords=%v, titleKeywords=%v, after=%s, before=%s, limit=%d, sessionType=%s",
+			input.Keywords, input.TitleKeywords, input.After, input.Before, input.Limit, input.SessionType)
 		// Convert input to search params
 		params := SearchMeetingsParams{
 			Keywords:      input.Keywords,
@@ -31,6 +32,7 @@ func HandleSearchMeetings(database *db.DB, estimateStart bool, legacyMode bool, 
 			After:         input.After,
 			Before:        input.Before,
 			Limit:         input.Limit,
+			SessionType:   input.SessionType,
 		}
 
 		// Perform search

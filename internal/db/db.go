@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/dayflower/mac-whisper-tool/internal/utils"
@@ -51,6 +52,62 @@ func (db *DB) Close() error {
 	return db.conn.Close()
 }
 
+// Session source tables joined to resolve type, title and duration regardless of
+// how the session was created (recorded meeting, system audio, voice memo, podcast,
+// downloaded/YouTube media, or a plain imported file).
+const sessionSourceJoins = `
+	LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
+	LEFT JOIN systemaudiorecording sa ON s.systemAudioRecordingID = sa.id
+	LEFT JOIN voicememos vm ON s.voiceMemoID = vm.id
+	LEFT JOIN podcast pc ON s.podcastID = pc.id
+	LEFT JOIN downloadmetadata dm ON s.downloadMetadataID = dm.id`
+
+// sessionTitleExpr resolves a human-readable title with a per-type fallback chain.
+const sessionTitleExpr = `COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, sa.title, vm.title, pc.title, dm.youtubeTitle, s.originalFilename, 'Untitled')`
+
+// sessionDurationExpr is the source-recording duration. It is NULL for types that
+// have no own duration column; callers fall back to session.playbackDuration.
+const sessionDurationExpr = `COALESCE(rm.duration, sa.duration)`
+
+// sessionTypeExpr classifies a session by which source FK is set (at most one is).
+const sessionTypeExpr = `CASE
+	WHEN s.recordedMeetingID IS NOT NULL THEN 'recorded-meeting'
+	WHEN s.systemAudioRecordingID IS NOT NULL THEN 'system-audio'
+	WHEN s.voiceMemoID IS NOT NULL THEN 'voice-memo'
+	WHEN s.podcastID IS NOT NULL THEN 'podcast'
+	WHEN s.downloadMetadataID IS NOT NULL AND s.isFromYoutube = 1 THEN 'youtube'
+	WHEN s.downloadMetadataID IS NOT NULL THEN 'download'
+	ELSE 'imported'
+END`
+
+// ValidSessionTypes lists the session type labels accepted by the --type filter.
+var ValidSessionTypes = []string{"recorded-meeting", "system-audio", "voice-memo", "podcast", "youtube", "download", "imported"}
+
+// sessionTypeCondition returns a SQL predicate (without leading AND) restricting
+// results to the given session type. An empty string means "no restriction".
+func sessionTypeCondition(t string) (string, error) {
+	switch t {
+	case "":
+		return "", nil
+	case "recorded-meeting":
+		return "s.recordedMeetingID IS NOT NULL", nil
+	case "system-audio":
+		return "s.systemAudioRecordingID IS NOT NULL", nil
+	case "voice-memo":
+		return "s.voiceMemoID IS NOT NULL", nil
+	case "podcast":
+		return "s.podcastID IS NOT NULL", nil
+	case "youtube":
+		return "s.downloadMetadataID IS NOT NULL AND s.isFromYoutube = 1", nil
+	case "download":
+		return "s.downloadMetadataID IS NOT NULL AND (s.isFromYoutube = 0 OR s.isFromYoutube IS NULL)", nil
+	case "imported":
+		return "s.recordedMeetingID IS NULL AND s.systemAudioRecordingID IS NULL AND s.voiceMemoID IS NULL AND s.podcastID IS NULL AND s.downloadMetadataID IS NULL", nil
+	default:
+		return "", fmt.Errorf("invalid session type %q (valid: %s)", t, strings.Join(ValidSessionTypes, ", "))
+	}
+}
+
 // ListMeetings retrieves a list of meetings based on filters
 // Optional logFunc parameter can be provided for debug logging
 func (db *DB) ListMeetings(filters ListMeetingsFilters, logFunc ...LogFunc) ([]MeetingInfo, error) {
@@ -67,37 +124,48 @@ func (db *DB) ListMeetings(filters ListMeetingsFilters, logFunc ...LogFunc) ([]M
 	// When EstimateStart is enabled, we need to filter by estimated start time
 	// This requires a subquery to calculate the estimated time first
 	if filters.EstimateStart && (filters.StartTime != nil || filters.EndTime != nil) {
-		query = `
+		query = fmt.Sprintf(`
 			SELECT
 				s.id,
 				s.dateCreated,
 				s.playbackDuration,
-				COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, 'Untitled') AS title,
+				%[1]s AS title,
 				COALESCE(s.textPreview, ''),
-				rm.duration,
+				%[2]s AS recordingDuration,
+				%[3]s AS sessionType,
 				CASE
-					WHEN COALESCE(rm.duration, s.playbackDuration, 0) > 0 THEN
-						datetime(s.dateCreated, '-' || CAST(COALESCE(rm.duration, s.playbackDuration) AS INTEGER) || ' seconds')
+					WHEN COALESCE(%[2]s, s.playbackDuration, 0) > 0 THEN
+						datetime(s.dateCreated, '-' || CAST(COALESCE(%[2]s, s.playbackDuration) AS INTEGER) || ' seconds')
 					ELSE
 						s.dateCreated
 				END AS estimatedStart
 			FROM session s
-			LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
-			WHERE s.recordedMeetingID IS NOT NULL
-		`
+			%[4]s
+			WHERE s.dateDeleted IS NULL
+		`, sessionTitleExpr, sessionDurationExpr, sessionTypeExpr, sessionSourceJoins)
 	} else {
-		query = `
+		query = fmt.Sprintf(`
 			SELECT
 				s.id,
 				s.dateCreated,
 				s.playbackDuration,
-				COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, 'Untitled') AS title,
+				%[1]s AS title,
 				COALESCE(s.textPreview, ''),
-				rm.duration
+				%[2]s AS recordingDuration,
+				%[3]s AS sessionType
 			FROM session s
-			LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
-			WHERE s.recordedMeetingID IS NOT NULL
-		`
+			%[4]s
+			WHERE s.dateDeleted IS NULL
+		`, sessionTitleExpr, sessionDurationExpr, sessionTypeExpr, sessionSourceJoins)
+	}
+
+	// Restrict to a specific session type if requested (e.g. --type imported)
+	typeCond, err := sessionTypeCondition(filters.SessionType)
+	if err != nil {
+		return nil, err
+	}
+	if typeCond != "" {
+		query += " AND " + typeCond
 	}
 
 	// Add content keyword filters (AND condition)
@@ -144,7 +212,7 @@ func (db *DB) ListMeetings(filters ListMeetingsFilters, logFunc ...LogFunc) ([]M
 
 	// Get total session count for debugging
 	var totalCount int
-	countQuery := "SELECT COUNT(*) FROM session s WHERE s.recordedMeetingID IS NOT NULL"
+	countQuery := "SELECT COUNT(*) FROM session s WHERE s.dateDeleted IS NULL"
 	if err := db.conn.QueryRow(countQuery).Scan(&totalCount); err == nil {
 		log("Database total sessions: %d", totalCount)
 	}
@@ -164,17 +232,18 @@ func (db *DB) ListMeetings(filters ListMeetingsFilters, logFunc ...LogFunc) ([]M
 			title             string
 			preview           string
 			recordingDuration *float64
+			sessionType       string
 			estimatedStartStr *string
 		)
 
 		// When EstimateStart is enabled and time filters are present, we have an extra column
 		if filters.EstimateStart && (filters.StartTime != nil || filters.EndTime != nil) {
-			err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration, &estimatedStartStr)
+			err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration, &sessionType, &estimatedStartStr)
 			if err != nil {
 				return nil, fmt.Errorf("failed to scan row: %w", err)
 			}
 		} else {
-			err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration)
+			err := rows.Scan(&id, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration, &sessionType)
 			if err != nil {
 				return nil, fmt.Errorf("failed to scan row: %w", err)
 			}
@@ -206,6 +275,7 @@ func (db *DB) ListMeetings(filters ListMeetingsFilters, logFunc ...LogFunc) ([]M
 			Duration:          duration,
 			Title:             title,
 			Preview:           preview,
+			Type:              sessionType,
 			UseEstimatedStart: filters.EstimateStart,
 		})
 	}
@@ -222,18 +292,19 @@ func (db *DB) GetSessionByID(sessionID string, estimateStart bool) (*MeetingInfo
 		return nil, err
 	}
 
-	query := `
+	query := fmt.Sprintf(`
 		SELECT
 			s.id,
 			s.dateCreated,
 			s.playbackDuration,
-			COALESCE(s.userChosenTitle, s.aiTitle, rm.title, rm.matchedCalendarTitle, 'Untitled'),
+			%[1]s,
 			COALESCE(s.textPreview, ''),
-			rm.duration
+			%[2]s,
+			%[3]s
 		FROM session s
-		LEFT JOIN recordedmeeting rm ON s.recordedMeetingID = rm.id
+		%[4]s
 		WHERE s.id = ?
-	`
+	`, sessionTitleExpr, sessionDurationExpr, sessionTypeExpr, sessionSourceJoins)
 
 	var (
 		dbID              []byte
@@ -242,9 +313,10 @@ func (db *DB) GetSessionByID(sessionID string, estimateStart bool) (*MeetingInfo
 		title             string
 		preview           string
 		recordingDuration *float64
+		sessionType       string
 	)
 
-	err = db.conn.QueryRow(query, id).Scan(&dbID, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration)
+	err = db.conn.QueryRow(query, id).Scan(&dbID, &dateCreated, &playbackDuration, &title, &preview, &recordingDuration, &sessionType)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("session not found: %s", sessionID)
 	}
@@ -273,6 +345,7 @@ func (db *DB) GetSessionByID(sessionID string, estimateStart bool) (*MeetingInfo
 		Duration:          duration,
 		Title:             title,
 		Preview:           preview,
+		Type:              sessionType,
 		UseEstimatedStart: estimateStart,
 	}, nil
 }

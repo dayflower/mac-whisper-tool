@@ -105,7 +105,8 @@ mac-whisper-tool/
    - Extended (`-f json -x`): Full metadata with `{title, dateStarted, dateCreated, duration, transcripts[]}` where each transcript includes `speakedAt`
 
 3. **Table** (list command only)
-   - Columns: Session ID, Start Time, Duration, Title, Preview
+   - Columns: Session ID, Start Time, Duration, Type, Title, Preview
+   - `list`/`search` return all session source types (recorded-meeting, system-audio, voice-memo, podcast, youtube, download, imported); `--type` filters to one
 
 ### File Naming Convention
 

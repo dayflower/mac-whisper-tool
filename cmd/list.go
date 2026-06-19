@@ -20,6 +20,7 @@ var (
 	listFormat        string
 	listExtend        bool
 	listEstimateStart bool
+	listSessionType   string
 )
 
 // listCmd represents the list command
@@ -40,6 +41,7 @@ func init() {
 	listCmd.Flags().StringVarP(&listFormat, "format", "f", "table", "Output format: table or json")
 	listCmd.Flags().BoolVarP(&listExtend, "extend", "x", false, "Output extended content")
 	listCmd.Flags().BoolVar(&listEstimateStart, "estimate-start", false, "Estimate meeting start time from dateCreated and duration")
+	listCmd.Flags().StringVar(&listSessionType, "type", "", "Filter by session type: recorded-meeting, system-audio, voice-memo, podcast, youtube, download, imported (empty = all)")
 }
 
 func runList(cmd *cobra.Command, args []string) error {
@@ -92,6 +94,7 @@ func runList(cmd *cobra.Command, args []string) error {
 		EndTime:       endTime,
 		Limit:         limit,
 		EstimateStart: estimateStart,
+		SessionType:   listSessionType,
 	}
 
 	// Query meetings

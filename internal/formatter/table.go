@@ -11,7 +11,7 @@ import (
 // FormatMeetingTable formats meetings as a table and writes to stdout
 func FormatMeetingTable(meetings []db.MeetingInfo) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Session ID", "Start Time", "Duration", "Title", "Preview"})
+	table.SetHeader([]string{"Session ID", "Start Time", "Duration", "Type", "Title", "Preview"})
 	table.SetAutoWrapText(false)
 	table.SetAutoFormatHeaders(true)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
@@ -29,6 +29,7 @@ func FormatMeetingTable(meetings []db.MeetingInfo) {
 			m.SessionID,
 			utils.FormatDateTime(m.DateStarted),
 			utils.FormatDuration(m.Duration),
+			m.Type,
 			m.Title,
 			m.Preview,
 		})

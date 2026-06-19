@@ -57,6 +57,7 @@ func ExportListJSON(w io.Writer, meetings []db.MeetingInfo) error {
 		SessionID   string  `json:"sessionId"`
 		DateStarted string  `json:"dateStarted"`
 		Duration    float64 `json:"duration"`
+		Type        string  `json:"type"`
 		Title       string  `json:"title"`
 		Preview     string  `json:"preview"`
 	}
@@ -67,6 +68,7 @@ func ExportListJSON(w io.Writer, meetings []db.MeetingInfo) error {
 			SessionID:   m.SessionID,
 			DateStarted: utils.FormatDateTime(m.DateStarted),
 			Duration:    m.Duration,
+			Type:        m.Type,
 			Title:       m.Title,
 			Preview:     m.Preview,
 		}
