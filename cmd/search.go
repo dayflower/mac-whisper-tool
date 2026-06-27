@@ -21,6 +21,7 @@ var (
 	searchLimit         int
 	searchFormat        string
 	searchEstimateStart bool
+	searchSessionType   string
 )
 
 // searchCmd represents the search command
@@ -69,6 +70,8 @@ func init() {
 		"Output format: table or json")
 	searchCmd.Flags().BoolVar(&searchEstimateStart, "estimate-start", false,
 		"Estimate meeting start time from dateCreated and duration")
+	searchCmd.Flags().StringVar(&searchSessionType, "type", "",
+		"Filter by session type: recorded-meeting, system-audio, voice-memo, podcast, youtube, download, imported (empty = all)")
 }
 
 func runSearch(cmd *cobra.Command, args []string) error {
@@ -76,8 +79,9 @@ func runSearch(cmd *cobra.Command, args []string) error {
 	if len(searchKeywords) == 0 &&
 		len(searchTitleKeywords) == 0 &&
 		searchStartTime == "" &&
-		searchEndTime == "" {
-		return fmt.Errorf("at least one search criterion must be specified (--keywords, --title, --start, or --end)")
+		searchEndTime == "" &&
+		searchSessionType == "" {
+		return fmt.Errorf("at least one search criterion must be specified (--keywords, --title, --start, --end, or --type)")
 	}
 
 	// 2. Open database
@@ -138,6 +142,7 @@ func runSearch(cmd *cobra.Command, args []string) error {
 		EstimateStart: estimateStart,
 		Keywords:      searchKeywords,
 		TitleKeywords: searchTitleKeywords,
+		SessionType:   searchSessionType,
 	}
 
 	// 8. Query meetings

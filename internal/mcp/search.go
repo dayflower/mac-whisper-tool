@@ -16,6 +16,7 @@ type SearchMeetingsParams struct {
 	After         string // YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS
 	Before        string // YYYY-MM-DD or YYYY-MM-DDTHH:MM:SS
 	Limit         int
+	SessionType   string // restrict to one session type; empty = all
 }
 
 // SearchMeetingsResult contains search results
@@ -64,6 +65,7 @@ func SearchMeetings(database *db.DB, params SearchMeetingsParams, estimateStart 
 		EstimateStart: estimateStart,
 		Keywords:      params.Keywords,
 		TitleKeywords: params.TitleKeywords,
+		SessionType:   params.SessionType,
 	}
 
 	// Query database
@@ -85,6 +87,7 @@ type SearchResultItem struct {
 	SessionID   string `json:"sessionId"`
 	DateStarted string `json:"dateStarted"`
 	Duration    string `json:"duration"`
+	Type        string `json:"type"`
 	Title       string `json:"title"`
 	Preview     string `json:"preview"`
 }
@@ -108,6 +111,7 @@ func FormatSearchResultJSON(result *SearchMeetingsResult) (string, error) {
 		items = append(items, SearchResultItem{
 			DateStarted: utils.FormatDateTime(meeting.DateStarted),
 			Duration:    utils.FormatDuration(meeting.Duration),
+			Type:        meeting.Type,
 			Title:       meeting.Title,
 			SessionID:   meeting.SessionID,
 			Preview:     meeting.Preview,

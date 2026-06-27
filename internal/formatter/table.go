@@ -37,13 +37,14 @@ func FormatMeetingTable(meetings []db.MeetingInfo) error {
 		}),
 	)
 
-	table.Header("Session ID", "Start Time", "Duration", "Title", "Preview")
+	table.Header("Session ID", "Start Time", "Duration", "Type", "Title", "Preview")
 
 	for _, m := range meetings {
 		if err := table.Append(
 			m.SessionID,
 			utils.FormatDateTime(m.DateStarted),
 			utils.FormatDuration(m.Duration),
+			m.Type,
 			m.Title,
 			m.Preview,
 		); err != nil {

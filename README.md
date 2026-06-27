@@ -67,17 +67,23 @@ The binary will be created in the current directory.
 
 ### List Meetings
 
-Display a list of meetings from the database:
+Display a list of sessions from the database. This includes **every session type** —
+recorded meetings, system-audio recordings, voice memos, podcasts, downloaded/YouTube
+media, and plain imported / folder-watched files. The `Type` column (and `type` JSON
+field) shows which kind each session is.
 
 ```bash
-# Show the most recent 20 meetings (default)
+# Show the most recent 20 sessions (default)
 mac-whisper-tool list
 
-# Show all meetings in JSON format
+# Show all sessions in JSON format (includes the "type" field)
 mac-whisper-tool list -n -1 -f json
 
 # Filter by date range
 mac-whisper-tool list -s 2025-12-01 -e 2025-12-31
+
+# Show only imported files (folder-watcher / drag-and-drop)
+mac-whisper-tool list --type imported
 
 # Estimate meeting start times (rounds to nearest 30 minutes)
 mac-whisper-tool list --estimate-start
@@ -90,6 +96,7 @@ mac-whisper-tool list --estimate-start
 - `-e, --end <datetime>` - Filter by end date
 - `-n, --limit <n>` - Maximum number of meetings (default: 20, negative for all)
 - `-f, --format <format>` - Output format: `table` or `json` (default: table)
+- `--type <type>` - Filter by session type: `recorded-meeting`, `system-audio`, `voice-memo`, `podcast`, `youtube`, `download`, `imported` (empty = all)
 - `--estimate-start` - Estimate meeting start time from dateCreated and duration
 - `-v, --verbose` - Enable verbose output to stderr
 
@@ -116,6 +123,9 @@ mac-whisper-tool search -k "meeting" -n 10
 # JSON output
 mac-whisper-tool search -k "Q4" -f json
 
+# Filter by session type (e.g. only voice memos mentioning "idea")
+mac-whisper-tool search -k "idea" --type voice-memo
+
 # Estimate start times
 mac-whisper-tool search -k "zoom" --estimate-start
 ```
@@ -128,11 +138,12 @@ mac-whisper-tool search -k "zoom" --estimate-start
 - `-e, --end <datetime>` - Filter by end date
 - `-n, --limit <n>` - Maximum number of results (default: 20, negative for all)
 - `-f, --format <format>` - Output format: `table` or `json` (default: table)
+- `--type <type>` - Filter by session type: `recorded-meeting`, `system-audio`, `voice-memo`, `podcast`, `youtube`, `download`, `imported` (empty = all)
 - `--estimate-start` - Estimate meeting start time from dateCreated and duration
 - `-d, --db <path>` - Database file path (inherited from global)
 - `-v, --verbose` - Enable verbose output to stderr (inherited from global)
 
-At least one search criterion (keywords, title, or date range) must be specified.
+At least one search criterion (keywords, title, date range, or type) must be specified.
 
 ### Export Transcriptions
 
