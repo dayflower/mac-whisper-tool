@@ -109,7 +109,9 @@ func runList(cmd *cobra.Command, args []string) error {
 	// Format output
 	switch listFormat {
 	case "table":
-		formatter.FormatMeetingTable(meetings)
+		if err := formatter.FormatMeetingTable(meetings); err != nil {
+			return err
+		}
 	case "json":
 		if err := exporter.ExportListJSON(os.Stdout, meetings); err != nil {
 			return err

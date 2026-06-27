@@ -157,7 +157,9 @@ func runSearch(cmd *cobra.Command, args []string) error {
 	// 9. Format output
 	switch searchFormat {
 	case "table":
-		formatter.FormatMeetingTable(meetings)
+		if err := formatter.FormatMeetingTable(meetings); err != nil {
+			return err
+		}
 	case "json":
 		if err := exporter.ExportListJSON(os.Stdout, meetings); err != nil {
 			return err
