@@ -93,6 +93,8 @@ brews:
       pull_request:
         enabled: true
         base:
+          owner: dayflower
+          name: homebrew-tap
           branch: main
     directory: Formula
     homepage: https://github.com/dayflower/mac-whisper-tool
