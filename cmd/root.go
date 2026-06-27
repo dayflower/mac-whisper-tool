@@ -27,11 +27,12 @@ enabling users to:
 - Export transcriptions in various formats (Markdown, JSON)
 - Start an MCP server for AI assistant integration
 `,
-	Version: "0.5.0",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-func Execute() {
+func Execute(version string) {
+	rootCmd.Version = version
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
