@@ -90,6 +90,10 @@ brews:
       owner: dayflower
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+        base:
+          branch: main
     directory: Formula
     homepage: https://github.com/dayflower/mac-whisper-tool
     description: CLI tool to manage MacWhisper meeting transcriptions (search, list, export, MCP server)
