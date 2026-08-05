@@ -10,7 +10,6 @@ import (
 
 	"github.com/dayflower/mac-whisper-tool/internal/utils"
 	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 // LogFunc is a function type for logging messages (optional parameter)
