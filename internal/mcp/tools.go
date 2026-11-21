@@ -162,6 +162,13 @@ func RegisterTools(server *mcpsdk.Server, database *db.DB, estimateStart bool, l
 	searchTool := &mcpsdk.Tool{
 		Name:        "search_meetings",
 		Description: "Search MacWhisper meeting transcriptions by content, title, or date range. Returns resource URIs for matching sessions.",
+		Annotations: &mcpsdk.ToolAnnotations{
+			ReadOnlyHint:   true,
+			DestructiveHint: false,
+			IdempotentHint: true,
+			OpenWorldHint:  false,
+			Title:          "Search Meetings",
+		},
 	}
 	mcpsdk.AddTool(server, searchTool, HandleSearchMeetings(database, estimateStart, legacyMode, logFunc))
 
@@ -170,6 +177,13 @@ func RegisterTools(server *mcpsdk.Server, database *db.DB, estimateStart bool, l
 		getMeetingTool := &mcpsdk.Tool{
 			Name:        "get_meeting",
 			Description: "Get meeting transcript by session ID. Returns full transcript in Markdown format.",
+			Annotations: &mcpsdk.ToolAnnotations{
+				ReadOnlyHint:   true,
+				DestructiveHint: false,
+				IdempotentHint: true,
+				OpenWorldHint:  false,
+				Title:          "Get Meeting Transcript",
+			},
 		}
 		mcpsdk.AddTool(server, getMeetingTool, HandleGetMeeting(database, estimateStart, logFunc))
 	}
