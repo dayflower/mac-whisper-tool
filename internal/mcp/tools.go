@@ -163,11 +163,11 @@ func RegisterTools(server *mcpsdk.Server, database *db.DB, estimateStart bool, l
 		Name:        "search_meetings",
 		Description: "Search MacWhisper meeting transcriptions by content, title, or date range. Returns resource URIs for matching sessions.",
 		Annotations: &mcpsdk.ToolAnnotations{
-			ReadOnlyHint:   true,
-			DestructiveHint: false,
-			IdempotentHint: true,
-			OpenWorldHint:  false,
-			Title:          "Search Meetings",
+			ReadOnlyHint:    true,
+			DestructiveHint: boolPtr(false),
+			IdempotentHint:  true,
+			OpenWorldHint:   boolPtr(false),
+			Title:           "Search Meetings",
 		},
 	}
 	mcpsdk.AddTool(server, searchTool, HandleSearchMeetings(database, estimateStart, legacyMode, logFunc))
@@ -178,13 +178,17 @@ func RegisterTools(server *mcpsdk.Server, database *db.DB, estimateStart bool, l
 			Name:        "get_meeting",
 			Description: "Get meeting transcript by session ID. Returns full transcript in Markdown format.",
 			Annotations: &mcpsdk.ToolAnnotations{
-				ReadOnlyHint:   true,
-				DestructiveHint: false,
-				IdempotentHint: true,
-				OpenWorldHint:  false,
-				Title:          "Get Meeting Transcript",
+				ReadOnlyHint:    true,
+				DestructiveHint: boolPtr(false),
+				IdempotentHint:  true,
+				OpenWorldHint:   boolPtr(false),
+				Title:           "Get Meeting Transcript",
 			},
 		}
 		mcpsdk.AddTool(server, getMeetingTool, HandleGetMeeting(database, estimateStart, logFunc))
 	}
 }
+
+// boolPtr returns a pointer to b, for optional *bool fields such as
+// ToolAnnotations.DestructiveHint and OpenWorldHint (which default to true when nil).
+func boolPtr(b bool) *bool { return &b }
